@@ -17,6 +17,7 @@ from typing import (
 )
 import json
 import datetime
+import hashlib
 from .queries import QueryLike
 from .storages import Storage
 from .utils import LRUCache
@@ -175,12 +176,20 @@ class Table:
             # ``dict`` instance even if it was a different class that
             # implemented the ``Mapping`` interface
             table[doc_id] = dict(document)
-            self.write_db_transaction(doc_id,"INSERT")
+            hash = self.json_hash(dict(document))
+            self.write_db_transaction(doc_id,hash)
 
         # See below for details on ``Table._update``
         self._update_table(updater)
 
         return doc_id
+
+    def json_hash(self,json_data):
+        y = json.dumps(json_data, sort_keys=True).encode('utf8')
+        # print(y)
+        h = hashlib.new('sha256')
+        h.update(y)
+        return h.hexdigest()
 
     def insert_multiple(self, documents: Iterable[Mapping]) -> List[int]:
         """
@@ -389,17 +398,20 @@ class Table:
                 data["trans_id"] = trans_id
                 data["operation"] = "UPDATE"
                 data["data"] = table[doc_id]
+                print(table[doc_id])
                 new_data[doc_id].append(data)
                 #new_data[doc_id].append(data)
 
                 #self._updated_docs[doc_id] = table[doc_id]
                 #print(new_data)
-                self.write_db_history(new_data,doc_id,trans_id)
+                self.write_db_history(new_data,doc_id)
 
-
+                old_data_json = table[doc_id]
                 table[doc_id].update(fields)
+                new_data_json = table[doc_id]
 
-
+                hash = self.two_jsons_hash(new_data_json,old_data_json)
+                self.write_db_transaction(trans_id, hash)
                 # print(table[doc_id])
                 #print(self._updated_docs)
 
@@ -474,7 +486,7 @@ class Table:
 
 
     def get_next_trans_id(self):
-        obj = json.load(open("database/db_history.json"))
+        obj = json.load(open("database/db_transactions.json"))
         documents = obj['_default']
         return len(documents)+1
 
@@ -492,8 +504,8 @@ class Table:
                 pass
         return available
 
-    def write_db_history(self,docs,doc_id,trans_id):
-        self.write_db_transaction(trans_id, "UPDATE")
+    def write_db_history(self,docs,doc_id):
+
         available = self.search_in_db_history(docs ,doc_id)
         #print(available)
         if available == None:
@@ -504,10 +516,10 @@ class Table:
                 json.dump(file_data, file, indent=4)
 
         #print(self._updated_docs)
-    def write_db_transaction(self,transaction_id , transaction):
+    def write_db_transaction(self,transaction_id , hash):
         new_data = {}
         new_data['transaction_id'] = transaction_id
-        new_data['transaction'] = transaction
+        new_data['hash'] = hash
         new_data['time_stamp'] = self.get_time()
         new_data['user'] = self.get_user()
         with open("database/db_transactions.json", 'r+') as file:
@@ -524,6 +536,19 @@ class Table:
     def get_user(self):
         user_name = "rukmals"
         return user_name
+
+    def json_to_string(self, json_data):
+        str_json = json.dumps(json_data, sort_keys=True).encode('utf8')
+        return str_json
+
+    def two_jsons_hash(self,new_data,old_data):
+        new_data_str = self.json_to_string(new_data)
+        old_data_str = self.json_to_string(old_data)
+        hash_str = new_data_str + old_data_str
+        #print(hash_str)
+        h = hashlib.new('sha256')
+        h.update(hash_str)
+        return h.hexdigest()
 
 
     def update_multiple(
@@ -672,6 +697,23 @@ class Table:
                         # Add document ID to list of removed document IDs
                         removed_ids.append(doc_id)
 
+                        data = {}
+                        new_data = {}
+                        new_data[doc_id] = []
+                        trans_id = self.get_next_trans_id()
+                        data["trans_id"] = trans_id
+                        data["operation"] = "DELETE"
+                        data["data"] = table[doc_id]
+                        print(table[doc_id])
+                        new_data[doc_id].append(data)
+                        # new_data[doc_id].append(data)
+
+                        # self._updated_docs[doc_id] = table[doc_id]
+                        # print(new_data)
+                        self.write_db_history(new_data, doc_id)
+
+                        hash = self.json_hash(table[doc_id])
+                        self.write_db_transaction(trans_id, hash)
                         # Remove document from the table
                         table.pop(doc_id)
 

@@ -17,9 +17,9 @@ if __name__ == '__main__':
     # print(db.insert({'name': 'Dinu', 'age': 26}))
 
 
-    print(db.update({'age':35},User.name == 'Namal'))
+    #print(db.update({'age':85},User.name == 'Namal'))
 
 
 
-    #print(db.remove(User.name=='Rukmal'))
+    print(db.remove(User.name=='Rukmal'))
 

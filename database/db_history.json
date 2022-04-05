@@ -3,20 +3,24 @@
         {
             "3": [
                 {
-                    "data": {
-                        "age": 35,
-                        "name": "Namal"
-                    },
+                    "trans_id": 6,
                     "operation": "UPDATE",
-                    "trans_id": 1
-                },
+                    "data": {
+                        "name": "Namal",
+                        "age": 21
+                    }
+                }
+            ]
+        },
+        {
+            "4": [
                 {
+                    "trans_id": 7,
+                    "operation": "DELETE",
                     "data": {
-                        "age": 35,
-                        "name": "Namal"
-                    },
-                    "operation": "UPDATE",
-                    "trans_id": 2
+                        "name": "Rukmal",
+                        "age": 25
+                    }
                 }
             ]
         }
