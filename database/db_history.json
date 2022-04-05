@@ -8,7 +8,7 @@
                         "name": "Namal"
                     },
                     "operation": "UPDATE",
-                    "trans_id": 13
+                    "trans_id": 1
                 },
                 {
                     "data": {
@@ -16,23 +16,7 @@
                         "name": "Namal"
                     },
                     "operation": "UPDATE",
-                    "trans_id": 13
-                },
-                {
-                    "data": {
-                        "age": 35,
-                        "name": "Namal"
-                    },
-                    "operation": "UPDATE",
-                    "trans_id": 13
-                },
-                {
-                    "data": {
-                        "age": 35,
-                        "name": "Namal"
-                    },
-                    "operation": "UPDATE",
-                    "trans_id": 13
+                    "trans_id": 2
                 }
             ]
         }

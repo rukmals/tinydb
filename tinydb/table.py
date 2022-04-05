@@ -385,7 +385,7 @@ class Table:
                 data = {}
                 new_data = {}
                 new_data[doc_id] = []
-                trans_id = doc_id+10
+                trans_id = self.get_next_trans_id()
                 data["trans_id"] = trans_id
                 data["operation"] = "UPDATE"
                 data["data"] = table[doc_id]
@@ -471,6 +471,13 @@ class Table:
             self._update_table(updater)
 
             return updated_ids
+
+
+    def get_next_trans_id(self):
+        obj = json.load(open("database/db_history.json"))
+        documents = obj['_default']
+        return len(documents)+1
+
 
     def search_in_db_history(self,docs , doc_id):
         obj = json.load(open("database/db_history.json"))
