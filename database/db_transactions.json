@@ -1,27 +1,15 @@
 {
     "_default": [
         {
-            "transaction_id": 5,
+            "transaction_id": 13,
             "transaction": "UPDATE",
-            "time_stamp": "2022-04-05 21:41:20.130271",
+            "time_stamp": "2022-04-06 00:57:02.710572",
             "user": "rukmals"
         },
         {
-            "transaction_id": 5,
+            "transaction_id": 13,
             "transaction": "UPDATE",
-            "time_stamp": "2022-04-05 21:41:38.402127",
-            "user": "rukmals"
-        },
-        {
-            "transaction_id": 6,
-            "transaction": "INSERT",
-            "time_stamp": "2022-04-05 21:43:24.302935",
-            "user": "rukmals"
-        },
-        {
-            "transaction_id": 7,
-            "transaction": "INSERT",
-            "time_stamp": "2022-04-05 21:43:24.304134",
+            "time_stamp": "2022-04-06 00:57:08.979248",
             "user": "rukmals"
         }
     ]

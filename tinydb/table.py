@@ -382,11 +382,19 @@ class Table:
         else:
             def perform_update(table, doc_id):
                 # Update documents by setting all fields from the provided data
+                data = {}
                 new_data = {}
-                new_data[doc_id] = table[doc_id]
-                print(table[doc_id])
+                new_data[doc_id] = []
+                trans_id = doc_id+10
+                data["trans_id"] = trans_id
+                data["operation"] = "UPDATE"
+                data["data"] = table[doc_id]
+                new_data[doc_id].append(data)
+                #new_data[doc_id].append(data)
+
                 #self._updated_docs[doc_id] = table[doc_id]
-                self.write_db_history(new_data)
+                #print(new_data)
+                self.write_db_history(new_data,doc_id,trans_id)
 
 
                 table[doc_id].update(fields)
@@ -396,7 +404,7 @@ class Table:
                 #print(self._updated_docs)
 
 
-                self.write_db_transaction(doc_id,"UPDATE")
+                #self.write_db_transaction(doc_id,"UPDATE")
                 #print(table[doc_id])
 
 
@@ -464,18 +472,29 @@ class Table:
 
             return updated_ids
 
+    def search_in_db_history(self,docs , doc_id):
+        obj = json.load(open("database/db_history.json"))
+        documents = obj['_default']
+        available = None
+        for i in range(len(documents)):
+            try:
+                obj['_default'][i][str(doc_id)].append(docs[doc_id][0])
+                open("database/db_history.json", "w").write(json.dumps(obj, sort_keys=True, indent=4, separators=(',', ': ')))
+                available = True
+            except:
+                pass
+        return available
 
-
-    def write_db_history(self,docs):
-
-        # if len(self._updated_docs) == 0:
-        #     print("Does not have docs to write in history document")
-        # else:
-        with open("database/db_history.json", 'r+') as file:
-            file_data = json.load(file)
-            file_data["_default"].append(docs)
-            file.seek(0)
-            json.dump(file_data, file, indent=4)
+    def write_db_history(self,docs,doc_id,trans_id):
+        self.write_db_transaction(trans_id, "UPDATE")
+        available = self.search_in_db_history(docs ,doc_id)
+        #print(available)
+        if available == None:
+            with open("database/db_history.json", 'r+') as file:
+                file_data = json.load(file)
+                file_data["_default"].append(docs)
+                file.seek(0)
+                json.dump(file_data, file, indent=4)
 
         #print(self._updated_docs)
     def write_db_transaction(self,transaction_id , transaction):
