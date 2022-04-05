@@ -100,6 +100,8 @@ class JSONStorage(Storage):
         # access mode
         if any([character in self._mode for character in ('+', 'w', 'a')]):  # any of the writing modes
             touch(path, create_dirs=create_dirs)
+            touch('database/db_history.json',create_dirs=create_dirs)
+            touch('database/db_transactions.json', create_dirs=create_dirs)
 
         # Open the file for reading/writing
         self._handle = open(path, mode=self._mode, encoding=encoding)
@@ -114,7 +116,7 @@ class JSONStorage(Storage):
         size = self._handle.tell()
 
         if not size:
-            # File is empty so we return ``None`` so TinyDB can properly
+            # File is empty, so we return ``None`` so TinyDB can properly
             # initialize the database
             return None
         else:
@@ -137,7 +139,7 @@ class JSONStorage(Storage):
         except io.UnsupportedOperation:
             raise IOError('Cannot write to the database. Access mode is "{0}"'.format(self._mode))
 
-        # Ensure the file has been writtens
+        # Ensure the file has been written
         self._handle.flush()
         os.fsync(self._handle.fileno())
 
