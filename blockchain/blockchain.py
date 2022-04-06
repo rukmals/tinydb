@@ -1,7 +1,7 @@
 import time
 import json
-from block import Block
-from blockchain.transaction import Transaction
+from blockchain.block import Block
+from blockchain.transaction import Transaction, TransactionEncoder
 
 
 class Blockchain:
@@ -46,21 +46,28 @@ class Blockchain:
         self.unconfirmed_transactions.append(transaction)
 
     def new_block_transactions(self):
-        last_transaction_id = self.last_block.transactions[-1].transaction_id
         new_transactions = []
+        print("length", str(len(self.last_block.transactions)))
+        if len(self.last_block.transactions) < 1:
+            last_transaction_id = 0
+        else:
+            print(self.last_block.transactions)
+            last_transaction_id = json.JSONDecoder().decode(self.last_block.transactions[-1])['transaction_id']
 
-        # read from db_transactions
+
+            # read from db_transactions
         with open("/home/nuwanga/projects/tinydb/database/db_transactions.json", 'r+') as file:
             file_data = json.load(file)
             for d in file_data["_default"]:
                 if last_transaction_id < d['transaction_id']:
                     transaction = Transaction(d['transaction_id'], d['user'], d['time_stamp'], d['hash'])
-                    new_transactions.append(transaction)
+                    new_transactions.append(TransactionEncoder().encode(transaction))
 
         return new_transactions
 
     def mine(self):
         new_transactions = self.new_block_transactions()
+        print(new_transactions)
         if not new_transactions:
             return False
 

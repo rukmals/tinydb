@@ -522,7 +522,7 @@ class Table:
         new_data['hash'] = hash
         new_data['time_stamp'] = self.get_time()
         new_data['user'] = self.get_user()
-        with open("database/db_transactions.json", 'r+') as file:
+        with open("/home/nuwanga/projects/tinydb/database/db_transactions.json", 'r+') as file:
             file_data = json.load(file)
             file_data["_default"].append(new_data)
             file.seek(0)
