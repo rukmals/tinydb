@@ -176,8 +176,8 @@ class Table:
             # ``dict`` instance even if it was a different class that
             # implemented the ``Mapping`` interface
             table[doc_id] = dict(document)
-            hash = self.json_hash(dict(document))
-            self.write_db_transaction(doc_id,hash)
+            # hash = self.json_hash(dict(document))
+            # self.write_db_transaction(doc_id,hash)
 
         # See below for details on ``Table._update``
         self._update_table(updater)
@@ -398,7 +398,7 @@ class Table:
                 data["trans_id"] = trans_id
                 data["operation"] = "UPDATE"
                 data["data"] = table[doc_id]
-                print(table[doc_id])
+                # print(table[doc_id])
                 new_data[doc_id].append(data)
                 #new_data[doc_id].append(data)
 
@@ -406,7 +406,7 @@ class Table:
                 #print(new_data)
                 self.write_db_history(new_data,doc_id)
 
-                old_data_json = table[doc_id]
+                old_data_json = dict(table[doc_id])
                 table[doc_id].update(fields)
                 new_data_json = table[doc_id]
 
@@ -545,7 +545,7 @@ class Table:
         new_data_str = self.json_to_string(new_data)
         old_data_str = self.json_to_string(old_data)
         hash_str = new_data_str + old_data_str
-        #print(hash_str)
+        # print(hash_str)
         h = hashlib.new('sha256')
         h.update(hash_str)
         return h.hexdigest()
@@ -712,8 +712,8 @@ class Table:
                         # print(new_data)
                         self.write_db_history(new_data, doc_id)
 
-                        hash = self.json_hash(table[doc_id])
-                        self.write_db_transaction(trans_id, hash)
+                        # hash = self.json_hash(table[doc_id])
+                        # self.write_db_transaction(trans_id, hash)
                         # Remove document from the table
                         table.pop(doc_id)
 
