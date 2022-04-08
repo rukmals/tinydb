@@ -38,9 +38,6 @@ class Document(dict):
         self.doc_id = doc_id
 
 
-
-
-
 class Table:
     """
     Represents a single TinyDB table.
@@ -100,10 +97,10 @@ class Table:
     default_query_cache_capacity = 10
 
     def __init__(
-        self,
-        storage: Storage,
-        name: str,
-        cache_size: int = default_query_cache_capacity
+            self,
+            storage: Storage,
+            name: str,
+            cache_size: int = default_query_cache_capacity
     ):
         """
         Create a table instance.
@@ -117,7 +114,6 @@ class Table:
         self._next_id = None
 
         self._updated_docs = {}
-
 
     def __repr__(self):
         args = [
@@ -175,16 +171,30 @@ class Table:
             # By calling ``dict(document)`` we convert the data we got to a
             # ``dict`` instance even if it was a different class that
             # implemented the ``Mapping`` interface
+
             table[doc_id] = dict(document)
-            # hash = self.json_hash(dict(document))
-            # self.write_db_transaction(doc_id,hash)
+            hash = self.two_jsons_hash(dict(document), '')
+
+            # Update documents by setting all fields from the provided data
+            data = {}
+            new_data = {}
+            new_data[doc_id] = []
+            trans_id = self.get_next_trans_id()
+            data["trans_id"] = trans_id
+            data["operation"] = "INSERT"
+            data["data"] = ''
+            # print(table[doc_id])
+            new_data[doc_id].append(data)
+
+            self.write_db_history(new_data, doc_id)
+            self.write_db_transaction(doc_id, hash)
 
         # See below for details on ``Table._update``
         self._update_table(updater)
 
         return doc_id
 
-    def json_hash(self,json_data):
+    def json_hash(self, json_data):
         y = json.dumps(json_data, sort_keys=True).encode('utf8')
         # print(y)
         h = hashlib.new('sha256')
@@ -294,9 +304,9 @@ class Table:
         return docs
 
     def get(
-        self,
-        cond: Optional[QueryLike] = None,
-        doc_id: Optional[int] = None,
+            self,
+            cond: Optional[QueryLike] = None,
+            doc_id: Optional[int] = None,
     ) -> Optional[Document]:
         """
         Get exactly one document specified by a query or a document ID.
@@ -338,9 +348,9 @@ class Table:
         raise RuntimeError('You have to pass either cond or doc_id')
 
     def contains(
-        self,
-        cond: Optional[QueryLike] = None,
-        doc_id: Optional[int] = None
+            self,
+            cond: Optional[QueryLike] = None,
+            doc_id: Optional[int] = None
     ) -> bool:
         """
         Check whether the database contains a document matching a query or
@@ -361,15 +371,12 @@ class Table:
 
         raise RuntimeError('You have to pass either cond or doc_id')
 
-
     def update(
-        self,
-        fields: Union[Mapping, Callable[[Mapping], None]],
-        cond: Optional[QueryLike] = None,
-        doc_ids: Optional[Iterable[int]] = None,
+            self,
+            fields: Union[Mapping, Callable[[Mapping], None]],
+            cond: Optional[QueryLike] = None,
+            doc_ids: Optional[Iterable[int]] = None,
     ) -> List[int]:
-
-
 
         """
         Update all matching documents to have a given set of fields.
@@ -380,14 +387,14 @@ class Table:
         :param doc_ids: a list of document IDs
         :returns: a list containing the updated document's ID
         """
-        #updated_docs = {}
+        # updated_docs = {}
         # Define the function that will perform the update
         if callable(fields):
             def perform_update(table, doc_id):
                 # Update documents by calling the update function provided by
                 # the user
                 fields(table[doc_id])
-                #print("here1")
+                # print("here1")
         else:
             def perform_update(table, doc_id):
                 # Update documents by setting all fields from the provided data
@@ -400,25 +407,23 @@ class Table:
                 data["data"] = table[doc_id]
                 # print(table[doc_id])
                 new_data[doc_id].append(data)
-                #new_data[doc_id].append(data)
+                # new_data[doc_id].append(data)
 
-                #self._updated_docs[doc_id] = table[doc_id]
-                #print(new_data)
-                self.write_db_history(new_data,doc_id)
+                # self._updated_docs[doc_id] = table[doc_id]
+                # print(new_data)
+                self.write_db_history(new_data, doc_id)
 
                 old_data_json = dict(table[doc_id])
                 table[doc_id].update(fields)
                 new_data_json = table[doc_id]
 
-                hash = self.two_jsons_hash(new_data_json,old_data_json)
+                hash = self.two_jsons_hash(new_data_json, old_data_json)
                 self.write_db_transaction(trans_id, hash)
                 # print(table[doc_id])
-                #print(self._updated_docs)
+                # print(self._updated_docs)
 
-
-                #self.write_db_transaction(doc_id,"UPDATE")
-                #print(table[doc_id])
-
+                # self.write_db_transaction(doc_id,"UPDATE")
+                # print(table[doc_id])
 
         if doc_ids is not None:
             # Perform the update operation for documents specified by a list
@@ -484,30 +489,29 @@ class Table:
 
             return updated_ids
 
-
     def get_next_trans_id(self):
         obj = json.load(open("database/db_transactions.json"))
         documents = obj['_default']
-        return len(documents)+1
+        return len(documents) + 1
 
-
-    def search_in_db_history(self,docs , doc_id):
+    def search_in_db_history(self, docs, doc_id):
         obj = json.load(open("database/db_history.json"))
         documents = obj['_default']
         available = None
         for i in range(len(documents)):
             try:
                 obj['_default'][i][str(doc_id)].append(docs[doc_id][0])
-                open("database/db_history.json", "w").write(json.dumps(obj, sort_keys=True, indent=4, separators=(',', ': ')))
+                open("database/db_history.json", "w").write(
+                    json.dumps(obj, sort_keys=True, indent=4, separators=(',', ': ')))
                 available = True
             except:
                 pass
         return available
 
-    def write_db_history(self,docs,doc_id):
+    def write_db_history(self, docs, doc_id):
 
-        available = self.search_in_db_history(docs ,doc_id)
-        #print(available)
+        available = self.search_in_db_history(docs, doc_id)
+        # print(available)
         if available == None:
             with open("database/db_history.json", 'r+') as file:
                 file_data = json.load(file)
@@ -515,8 +519,9 @@ class Table:
                 file.seek(0)
                 json.dump(file_data, file, indent=4)
 
-        #print(self._updated_docs)
-    def write_db_transaction(self,transaction_id , hash):
+        # print(self._updated_docs)
+
+    def write_db_transaction(self, transaction_id, hash):
         new_data = {}
         new_data['transaction_id'] = transaction_id
         new_data['hash'] = hash
@@ -541,7 +546,7 @@ class Table:
         str_json = json.dumps(json_data, sort_keys=True).encode('utf8')
         return str_json
 
-    def two_jsons_hash(self,new_data,old_data):
+    def two_jsons_hash(self, new_data, old_data):
         new_data_str = self.json_to_string(new_data)
         old_data_str = self.json_to_string(old_data)
         hash_str = new_data_str + old_data_str
@@ -550,12 +555,11 @@ class Table:
         h.update(hash_str)
         return h.hexdigest()
 
-
     def update_multiple(
-        self,
-        updates: Iterable[
-            Tuple[Union[Mapping, Callable[[Mapping], None]], QueryLike]
-        ],
+            self,
+            updates: Iterable[
+                Tuple[Union[Mapping, Callable[[Mapping], None]], QueryLike]
+            ],
     ) -> List[int]:
         """
         Update all matching documents to have a given set of fields.
@@ -645,9 +649,9 @@ class Table:
         return [self.insert(document)]
 
     def remove(
-        self,
-        cond: Optional[QueryLike] = None,
-        doc_ids: Optional[Iterable[int]] = None,
+            self,
+            cond: Optional[QueryLike] = None,
+            doc_ids: Optional[Iterable[int]] = None,
     ) -> List[int]:
         """
         Remove all matching documents.
@@ -712,8 +716,8 @@ class Table:
                         # print(new_data)
                         self.write_db_history(new_data, doc_id)
 
-                        # hash = self.json_hash(table[doc_id])
-                        # self.write_db_transaction(trans_id, hash)
+                        hash = self.two_jsons_hash('', table[doc_id])
+                        self.write_db_transaction(trans_id, hash)
                         # Remove document from the table
                         table.pop(doc_id)
 

@@ -128,15 +128,21 @@ class Blockchain:
                         doc_id = key
                         old_data = entry['data']
                         found = True
+                        operation = entry['operation']
                         break
                 if found:
                     if idx == value_length:
-                        # read from db_history
-                        obj_db = json.load(open("database/db.json"))
-                        db_documents = obj_db['_default']
-                        new_data = db_documents[str(doc_id)]
+                        if operation == "DELETE":
+                            new_data = ''
+                        else:
+                            # read from db_history
+                            obj_db = json.load(open("database/db.json"))
+                            db_documents = obj_db['_default']
+                            new_data = db_documents[str(doc_id)]
                     else:
                         new_data = value[idx]['data']
+
+
 
         # print(old_data)
         # print(new_data)
